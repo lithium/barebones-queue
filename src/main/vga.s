@@ -20,7 +20,7 @@ println:
 		pushl	%ebp		// enter
 		movl	%esp, %ebp  // enter
 		pushl   %ebx        // registers we clobber
-		subl	$16, %esp 	// 1 local variable
+		subl	$4, %esp 	// 1 local variable
 
 		// i = 0
 		movl 	$0, -8(%ebp)
@@ -59,7 +59,7 @@ println:
 	.LloopE:
 
 
-		addl 	$16, %esp 		// discard our strack frame
+		addl 	$4, %esp 		// discard our strack frame
 		popl 	%ebx			// restore registers
 
 		leave

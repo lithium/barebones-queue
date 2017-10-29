@@ -23,6 +23,7 @@ main:
 
 	movl    $8, %ebx
 
+	// println(hello, ebx, 7)
 	movl	hello, %eax
 	pushl 	$7
 	pushl	%eax
@@ -32,6 +33,7 @@ main:
 
 	incl    %ebx
 
+	// println(hello, ebx, 7)
 	movl	hello, %eax
 	pushl 	$7
 	pushl	%eax
