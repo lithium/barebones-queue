@@ -17,19 +17,21 @@ vgamem: .long 0xB8000
 
 println:
 
-		pushl	%ebp
-		movl	%esp, %ebp
-		subl	$16, %esp
+		pushl	%ebp		// enter
+		movl	%esp, %ebp  // enter
+		pushl   %ebx        // registers we clobber
+		subl	$16, %esp 	// 1 local variable
 
 		// i = 0
-		movl 	$0, -4(%ebp)
+		movl 	$0, -8(%ebp)
 
 	.loop:
 		// ax = *(str + i)
 		movl	12(%ebp), %eax		# ebx = str
-		addl    -4(%ebp), %eax 		# eax += i
+		addl    -8(%ebp), %eax 		# eax += i
 		movzbw	(%eax), %ax 		
 
+		// break if ax == '\0'
 		cmp 	$0, %ax
 		je 		.LloopE
 
@@ -39,24 +41,26 @@ println:
 		sall 	$8, %ecx
 		orw     %cx, %bx
 
-
-		// vgamem[(row*80 + i)] = bx
+		// vgamem[(row*80 + i)*2] = bx
 		movl 	8(%ebp), %eax
 		movl	$80, %ecx
 		mulw	%cx
-		addl	-4(%ebp), %eax
+		addl	-8(%ebp), %eax
 		sall    $1, %eax
 		addl	vgamem, %eax
 		movw	%bx, (%eax)
 
 		// i++
-		movl    -4(%ebp), %ecx
+		movl    -8(%ebp), %ecx
 		incl 	%ecx
-		movl 	%ecx, -4(%ebp)
+		movl 	%ecx, -8(%ebp)
 
 		jmp		.loop
 	.LloopE:
 
+
+		addl 	$16, %esp 		// discard our strack frame
+		popl 	%ebx			// restore registers
 
 		leave
 		ret

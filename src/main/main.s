@@ -20,12 +20,23 @@ main:
 	pushl	%ebp
 	movl	%esp, %ebp
 
+
+	movl    $8, %ebx
+
 	movl	hello, %eax
 	pushl 	$7
 	pushl	%eax
-	pushl	$8
+	pushl	%ebx
 	call	println
+	addl	$12, %esp 
 
+	incl    %ebx
+
+	movl	hello, %eax
+	pushl 	$7
+	pushl	%eax
+	pushl	%ebx
+	call	println
 	addl	$12, %esp 
 
 	leave
