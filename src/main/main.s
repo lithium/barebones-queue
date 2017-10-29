@@ -1,4 +1,15 @@
 
+.section .rodata
+.Lhello:	
+	.string "hello println!"
+
+
+.section .data
+
+hello:
+	.long .Lhello
+	.size hello, 4
+
 
 .section .text
 
@@ -6,7 +17,18 @@
 .type main, @function
 main:
 
-	mov		$1, %eax
+	pushl	%ebp
+	movl	%esp, %ebp
+
+	movl	hello, %eax
+	pushl 	$7
+	pushl	%eax
+	pushl	$8
+	call	println
+
+	addl	$12, %esp 
+
+	leave
 	ret
 
 .size main, . - main

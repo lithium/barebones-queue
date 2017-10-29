@@ -32,6 +32,7 @@ stack_top:
 _start:
 	# initialize stack
 	movl $stack_top, %esp
+	movl $stack_top, %ebp
 
 	call main
 
