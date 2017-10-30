@@ -16,6 +16,7 @@ hello:
 .global main
 .type main, @function
 main:
+.code32
 
 	pushl	%ebp
 	movl	%esp, %ebp

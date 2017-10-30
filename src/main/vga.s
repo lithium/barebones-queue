@@ -16,6 +16,7 @@ vgamem: .long 0xB8000
 .type println, @function
 
 println:
+.code32
 
 		pushl	%ebp		// enter
 		movl	%esp, %ebp  // enter
