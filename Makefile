@@ -18,7 +18,9 @@ sources := $(wildcard src/**/*.s)
 objects := $(addprefix $(OBJ)/, $(notdir $(sources:%.s=%.o)))
 
 
-all: build qemu
+all: build 
+
+iso: build $(BOOTABLE_ISO)
 
 
 build:
@@ -45,7 +47,7 @@ qemu: build $(KERNEL)
 cdrom: $(BOOTABLE_ISO)
 	$(QEMU) -cdrom $(BOOTABLE_ISO)
 
-debug: clean build $(KERNEL)
+debug: clean build $(BOOTABLE_ISO)
 	$(OBJDUMP) -d $(KERNEL)
 	qemu-system-i386 -s -S -cdrom $(BOOTABLE_ISO)
 
