@@ -1,8 +1,8 @@
 
 .section .text
 
-.global main64
-main64:
+.global long_mode_start
+long_mode_start:
 .code64
 
 	movq	$0x2f592f412f4b2f4f, %rax

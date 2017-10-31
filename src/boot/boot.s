@@ -1,8 +1,8 @@
 .global start
+.code32
 
 
 .section .text
-.code32
 
 
 start:
@@ -19,12 +19,15 @@ start:
 		movl	$0xb8000, %edi
 		movl	$0x4f4b4f4f, (%edi)
 
-		// call	setup_pagetables
-		// call	enable_paging
+		hlt
 
-		// print OK64 -- we're in longmode
-		// movl	$0xb8004, %edi
-		// movl	$0x4f344f36, (%edi)
+		call	setup_pagetables
+		call	enable_paging
+
+		// print OK64 -- we're in compatability longmode
+		movl	$0xb8004, %edi
+		movl	$0x4f344f36, (%edi)
+		hlt
 
 	.Lmain:
 		// TODO: call 64-bit main
@@ -67,10 +70,6 @@ clear_screen:
 		ret
 
 
-// 	.set PAE_PAGING_BIT, 1<<5
-// 	.set EFER_MSR, 0xC0000080
-// 	.set LM_BIT, 1<<8
-// 	.set PAGING_BIT, 1<<31
 
 check_cpuid:
 	.set CPUID_BIT,  1<<21
@@ -122,63 +121,66 @@ check_longmode:
 		jmp		error
 
 
-// 	.setup_longmode_paging:
-// 		// p4 -> p3
-// 		movl    $p4_table, %edi
-// 		movl 	$p3_table, %eax
-// 		orl 	$0b11, %eax
-// 		movl 	%eax, (%edi)
 
-// 		// p3 -> p2
-// 		movl    $p3_table, %edi
-// 		movl 	$p2_table, %eax
-// 		orl 	$0b11, %eax
-// 		movl 	%eax, (%edi)
+setup_pagetables:
 
-// 		// p2 -> p1
-// 		movl    $p2_table, %edi
-// 		movl 	$p1_table, %eax
-// 		orl 	$0b11, %eax
-// 		movl 	%eax, (%edi)
+		// p4[511] -> p4 
+		movl	$p4_table, %eax
+		orl 	$0b11, %eax // present + writable
+		mov 	%eax, (p4_table+511*8)
 
+		// p4[0] -> p3
+		movl 	$p3_table, %eax
+		orl 	$0b11, %eax
+		movl 	%eax, (p4_table)
 
-// 		movl 	$0, %ecx
-// 		.identity_map:
-// 			movl	$0x1000, %eax  // 4k pages
-// 			mull 	%ecx
-// 			orl 	$0b11, %eax
-// 			movl	%eax, p1_table(,%ecx,8)
-// 			inc 	%ecx
-// 			cmp 	$512, %ecx
-// 			jne		.identity_map
+		// p3[0] -> p2
+		movl 	$p2_table, %eax
+		orl 	$0b11, %eax
+		movl 	%eax, (p3_table)
 
+		// identity map first 1G
+		movl	$0, %ecx
+	.Lidentity_map_p2:
+		movl	$0x200000, %eax 			// 2MB pages
+		mull 	%ecx
+		orl 	$0b10000011, %eax			// huge + present + writable
+		movl 	%eax, p2_table(, %ecx, 8)
 
-// 	.switch_to_compatability_mode:
+		incl 	%ecx
+		cmp     $512, %ecx
+		jne 	.Lidentity_map_p2
 
-// 		.Lset_page_table:
-// 		movl 	$p4_table, %eax
-// 		movl	%eax, %cr3
+		ret
 
 
-// 		.Lenable_pae_paging:
-// 		movl	%cr4, %eax
-// 		orl 	$PAE_PAGING_BIT, %eax
-// 		movl	%eax, %cr4
+enable_paging:
+	.set PAE_PAGING_BIT, 1<<5
+	.set EFER_MSR, 0xC0000080
+	.set LM_BIT, 1<<8
+	.set PAGING_BIT, 1<<31
 
+		// %cr3 = p4_table
+		movl 	$p4_table, %eax
+		movl	%eax, %cr3
 
-// 		// set EFER MSR and LM-bit
-// 		movl	$EFER_MSR, %ecx
-// 		rdmsr
-// 		orl 	$LM_BIT, %eax
-// 		wrmsr
+		// enable PAE
+		movl	%cr4, %eax
+		orl 	$PAE_PAGING_BIT, %eax
+		movl	%eax, %cr4
 
-// 		// enable paging
-// 		movl	%cr0, %eax
-// 		orl 	$PAGING_BIT, %eax
-// 		movl	%eax, %cr0
+		// set long mode bit in EFER MSR
+		movl	$EFER_MSR, %ecx
+		rdmsr
+		orl 	$LM_BIT, %eax
+		wrmsr
 
+		// enable paging
+		movl	%cr0, %eax
+		orl 	$PAGING_BIT, %eax
+		movl	%eax, %cr0
+		ret
 
-// hlt
 
 
 // 	.load_global_descriptor_table:
@@ -206,34 +208,22 @@ check_longmode:
 
 
 
-// _end:
-// 	cli
-// 	hlt
-// .Lhang:
-// 	jmp .Lhang
 
-// .size _start, . - _start
+.section .rodata
 
+	.set GDT_EXECUTABLE, 1<<43
+	.set GDT_CODE_SEGMENT, 1<<44
+	.set GDT_PRESENT, 1<<47
+	.set GDT_64BIT, 1<<53
 
+GDT:
+		.quad	0 	// null entry
+	.code:
+		.quad (GDT_EXECUTABLE | GDT_CODE_SEGMENT | GDT_PRESENT | GDT_64BIT)
 
-// .section .rodata
-
-// 	.set GDT_EXECUTABLE, 1<<43
-// 	.set GDT_CODE_SEGMENT, 1<<44
-// 	.set GDT_PRESENT, 1<<47
-// 	.set GDT_64BIT, 1<<53
-
-// 	GDT:
-// 		.null:
-// 			.quad 0
-// 		.code:
-// 			.quad (GDT_EXECUTABLE | GDT_CODE_SEGMENT | GDT_PRESENT | GDT_64BIT)
-// 	GDT_end:
-
-// 	GDT64:
-// 		.word (GDT_end - GDT - 1)
-// 		.quad GDT
-
+GDT.pointer:
+		.word (. - GDT - 1)
+		.quad GDT
 
 
 
