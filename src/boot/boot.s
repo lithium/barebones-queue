@@ -1,6 +1,7 @@
 .global start
-.code32
+.extern longmode_start
 
+.code32
 
 .section .text
 
@@ -25,21 +26,24 @@ start:
 		// print OK64 -- we're in compatability longmode
 		movl	$0xb8004, %edi
 		movl	$0x4f344f36, (%edi)
-		hlt
 
 	.Lmain:
-		// TODO: call 64-bit main
+		lgdt	GDT.pointer
 
+		// 8 is the offset in GDT to the code segment
+		ljmp	$8, $longmode_start
+
+
+		// returned from main
 		movb	$'0', %al
 		jmp 	error
 
 
 /*
- * error
+ * error - print ERRN to vga mem
  * 		%al: error code in ascii
  */
 error:
-		//print ERRN where N is error code in AL
 		movl	$0xb8000, %edi
 		movl	$0x4f524f45, (%edi)
 		add 	$4, %edi
@@ -178,33 +182,6 @@ enable_paging:
 		orl 	$PAGING_BIT, %eax
 		movl	%eax, %cr0
 		ret
-
-
-
-// 	.load_global_descriptor_table:
-// 		lgdt 	GDT64
-
-// 		// .Lrefresh_segments:
-// 		movw 	$0, %ax
-// 		movw	%ax, %ds
-// 		movw	%ax, %es
-// 		movw	%ax, %fs
-// 		movw	%ax, %gs
-// 		movw	%ax, %ss
-
-
-
-
-// 	.Lmain64:
-// 		# initialize stack
-// 		// movl $stack_top, %esp
-// 		// movl $stack_top, %ebp
-// 		// call main
-// 		// jmp main64
-// 		ljmp	$8, $main64
-
-
-
 
 
 .section .rodata
