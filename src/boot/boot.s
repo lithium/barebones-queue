@@ -19,8 +19,6 @@ start:
 		movl	$0xb8000, %edi
 		movl	$0x4f4b4f4f, (%edi)
 
-		hlt
-
 		call	setup_pagetables
 		call	enable_paging
 
