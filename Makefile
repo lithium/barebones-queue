@@ -48,7 +48,7 @@ cdrom: $(BOOTABLE_ISO)
 	$(QEMU) -cdrom $(BOOTABLE_ISO)
 
 debug: clean build $(BOOTABLE_ISO)
-	$(OBJDUMP) -d $(KERNEL)
+	$(OBJDUMP) -hd $(KERNEL)
 	qemu-system-i386 -s -S -cdrom $(BOOTABLE_ISO)
 
 clean:

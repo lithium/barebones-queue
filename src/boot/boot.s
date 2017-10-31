@@ -24,6 +24,7 @@
 
 .global _start
 _start:
+	movl 	$stack_top, %esp 
 
 	// multiboot1 left us in 32bit protected mode, paging off
 
@@ -84,54 +85,56 @@ _start:
 		movl 	$0x80000001, %eax
 		cpuid
 		test 	$LONGMODE_BIT, %edx
-		// jz 		_end
+		jz 		_end
 
+		// print 64bit success message
+	.Lok_64:
+		movl	$0xb8004, %edi
+		movl	$0x4f344f36, (%edi)
 
 	.setup_longmode_paging:
-		// identity map the first 2MB
-		// 		PML4T[0]	0x1000
-		// 		PDPT[0] 	0x2000
-		// 		PDT[0] 		0x3000
-		//		PT 			0x4000 -> 0x00000000 - 0x00200000
+		// p4 -> p3
+		movl    $p4_table, %edi
+		movl 	$p3_table, %eax
+		orl 	$0b11, %eax
+		movl 	%eax, (%edi)
 
-		// zero 4k at PML4T[0]
-		movl 	$0x1000, %edi
-		movl	%edi, %cr3
-		xorl	%eax, %eax
-		movl	$4096, %ecx
-		rep stosw
+		// p3 -> p2
+		movl    $p3_table, %edi
+		movl 	$p2_table, %eax
+		orl 	$0b11, %eax
+		movl 	%eax, (%edi)
 
-		// PML4T[0] = 0x2003
-		movl 	%cr3, %edi
-		movl 	$0x2003, (%edi)
+		// p2 -> p1
+		movl    $p2_table, %edi
+		movl 	$p1_table, %eax
+		orl 	$0b11, %eax
+		movl 	%eax, (%edi)
 
-		// PDPT[0](0x2000) = 0x3003
-		addl 	$0x1000, %edi
-		movl 	$0x3003, (%edi)
 
-		// PDPT[0](0x3000) = 0x4003
-		addl 	$0x1000, %edi
-		movl 	$0x4003, (%edi)
-
-		// edi == PT (identity page)
-		addl 	$0x1000, %edi
-
-		// identity map 2MB
-		movl 	$3, %ebx
-		mov 	$512, %ecx
-		.Lset_page_entry:
-			movl 	%ebx, (%edi)
-			addl 	$0x1000, %ebx
-			addl	$8, %edi
-			loop 	.Lset_page_entry
-
-		.Lenable_pae_paging:
-			movl	%cr4, %eax
-			orl 	$PAE_PAGING_BIT, %eax
-			movl	%eax, %cr4
+		movl 	$0, %ecx
+		.identity_map:
+			movl	$0x1000, %eax  // 4k pages
+			mull 	%ecx
+			orl 	$0b11, %eax
+			movl	%eax, p1_table(,%ecx,8)
+			inc 	%ecx
+			cmp 	$512, %ecx
+			jne		.identity_map
 
 
 	.switch_to_compatability_mode:
+
+		.Lset_page_table:
+		movl 	$p4_table, %eax
+		movl	%eax, %cr3
+
+
+		.Lenable_pae_paging:
+		movl	%cr4, %eax
+		orl 	$PAE_PAGING_BIT, %eax
+		movl	%eax, %cr4
+
 
 		// set EFER MSR and LM-bit
 		movl	$EFER_MSR, %ecx
@@ -144,22 +147,22 @@ _start:
 		orl 	$PAGING_BIT, %eax
 		movl	%eax, %cr0
 
+
+hlt
+
+
 	.load_global_descriptor_table:
 		lgdt 	GDT64
 
 		// .Lrefresh_segments:
-		// movw 	$0x10, %ax
-		// movw	%ax, %ds
-		// movw	%ax, %es
-		// movw	%ax, %fs
-		// movw	%ax, %gs
-		// movw	%ax, %ss
+		movw 	$0, %ax
+		movw	%ax, %ds
+		movw	%ax, %es
+		movw	%ax, %fs
+		movw	%ax, %gs
+		movw	%ax, %ss
 
 
-		// print 64bit success message
-	.Lok_64:
-		movl	$0xb8004, %edi
-		movl	$0x4f344f36, (%edi)
 
 
 	.Lmain64:
@@ -167,7 +170,8 @@ _start:
 		// movl $stack_top, %esp
 		// movl $stack_top, %ebp
 		// call main
-		jmp main64
+		// jmp main64
+		ljmp	$8, $main64
 
 
 
@@ -184,40 +188,21 @@ _end:
 
 .section .rodata
 
-	GDT:
-		.Null: 
-		.align 32
-			.long 0
-			.long 0
-			.byte 0
-			.byte 0
-			.byte 0
-			.byte 0
-		.Code: 
-		.align 32
-			.long 0
-			.long 0
-			.byte 0
-			.byte 0b10011010
-			.byte 0b00100000
-			.byte 0
-		.Data: 
-		.align 32
-			.long 0
-			.long 0
-			.byte 0
-			.byte 0b10011010
-			.byte 0b00000000
-			.byte 0
-	GDT_end:
+	.set GDT_EXECUTABLE, 1<<43
+	.set GDT_CODE_SEGMENT, 1<<44
+	.set GDT_PRESENT, 1<<47
+	.set GDT_64BIT, 1<<53
 
-	GDT32:
-		.word (GDT_end - GDT - 1)
-		.long (.Code - GDT)
+	GDT:
+		.null:
+			.quad 0
+		.code:
+			.quad (GDT_EXECUTABLE | GDT_CODE_SEGMENT | GDT_PRESENT | GDT_64BIT)
+	GDT_end:
 
 	GDT64:
 		.word (GDT_end - GDT - 1)
-		.quad (.Code - GDT)
+		.quad GDT
 
 
 
@@ -234,8 +219,14 @@ _end:
 .section .bss
 .align 4096
 p4_table:
+.align 4096
 	.skip 4096
 p3_table:
+.align 4096
 	.skip 4096
 p2_table:
+.align 4096
+	.skip 4096
+p1_table:
+.align 4096
 	.skip 4096
