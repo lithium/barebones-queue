@@ -66,7 +66,7 @@ error:
  */
 clear_screen:
 		movl	$0xb8000, %edi
-		xorl	%eax, %eax
+		movl	$0x700, %eax		// clear screen to be gray on black
 		movl 	$(80*25), %ecx
 	rep stosw
 		ret
