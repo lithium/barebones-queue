@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "vga/vga.h"
 
 extern uint32_t multiboot2_magic;
 extern uint32_t multiboot2_info_addr;
@@ -6,9 +7,12 @@ extern uint32_t multiboot2_info_addr;
 
 void main64() 
 {
-	//print Main 
-	long *video_mem	= (long *)0xb8000;
-	video_mem[20] = 0x2f6e2f692f612f4d;
+	char hellostring[10] = "hello 00\0\0";
 
-	video_mem[40] = multiboot2_magic;
+	for (int i=0; i < 100; i++) {
+		hellostring[6] = '0' + i / 10;
+		hellostring[7] = '0' + i % 10;
+		Println(hellostring, 7);
+	}
+
 }

@@ -8,7 +8,7 @@ OBJDUMP := $(TARGET)-objdump
 GRUB_MKRESCUE := grub-mkrescue
 QEMU := qemu-system-$(ARCH)
 
-CFLAGS := -g -target $(TARGET) -I src/boot
+CFLAGS := -g -target $(TARGET) -I src
 LDFLAGS := -g -z max-page-size=0x1000
 ASFLAGS := -g
 
