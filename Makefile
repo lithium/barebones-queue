@@ -3,10 +3,12 @@ TARGET := $(ARCH)-elf
 
 LD := $(TARGET)-ld
 GAS := $(TARGET)-as
+CC := clang
 OBJDUMP := $(TARGET)-objdump
 GRUB_MKRESCUE := grub-mkrescue
 QEMU := qemu-system-$(ARCH)
 
+CFLAGS := -g -target $(TARGET) -I src/boot
 LDFLAGS := -g -z max-page-size=0x1000
 ASFLAGS := -g
 
@@ -15,8 +17,12 @@ ISO_STAGING := $(OBJ)/iso
 KERNEL := $(OBJ)/kernel.elf
 BOOTABLE_ISO := barebones-longmode.iso
 
-sources := $(wildcard src/**/*.s)
-objects := $(addprefix $(OBJ)/, $(notdir $(sources:%.s=%.o)))
+assembler_sources := $(wildcard src/**/*.s)
+assembler_objects := $(addprefix $(OBJ)/, $(notdir $(assembler_sources:%.s=%.o)))
+
+c_sources := $(wildcard src/**/*.c)
+c_objects := $(addprefix $(OBJ)/, $(notdir $(c_sources:%.c=%.o)))
+
 grub_config := src/boot/grub.cfg
 linker_script := src/boot/linker.ld
 
@@ -30,9 +36,14 @@ $(OBJ)/%.o: src/**/%.s
 	@mkdir -p $(OBJ)
 	$(GAS) $(ASFLAGS) $^ -o $@
 
+# assemble .c -> .o
+$(OBJ)/%.o: src/**/%.c
+	@mkdir -p $(OBJ)
+	$(CC) $(CFLAGS) -c $^ -o $@
+
 # link kernel
-$(KERNEL): $(objects) $(linker_script)
-	$(LD) $(LDFLAGS) -T $(linker_script) -o $@ $(objects)
+$(KERNEL): $(assembler_objects) $(c_objects) $(linker_script)
+	$(LD) $(LDFLAGS) -T $(linker_script) -o $@ $(assembler_objects) $(c_objects)
 
 # bootable iso 
 $(BOOTABLE_ISO): $(KERNEL) $(grub_config)

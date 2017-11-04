@@ -1,17 +1,32 @@
 .global start
-.extern longmode_start
+.global multiboot2_info_addr
+.global multiboot2_magic
 
-.code32
+
+.section .bss
+
+multiboot2_magic:
+		.long	0
+
+multiboot2_info_addr:
+		.long	0
+
 
 .section .text
+.code32
 
 
 start:
-		// multiboot1 left us in 32bit protected mode, paging off
+		// save multiboot information for kernel
+		movl	%eax, (multiboot2_magic)
+		movl	%ebx, (multiboot2_info_addr)
+
+		// initialize stack
 		movl 	$stack_top, %esp 
 
-		// cleared screen indicates we booted
 		call	clear_screen
+		// cleared screen indicates we booted
+
 
 		call	check_cpuid
 		call	check_longmode
@@ -34,9 +49,6 @@ start:
 		ljmp	$8, $longmode_start
 
 
-		// returned from main
-		movb	$'0', %al
-		jmp 	error
 
 
 /*
@@ -53,7 +65,8 @@ error:
 		movb 	$0x4f, %ah
 		movw 	%ax, (%edi)
 
-	.Lend:
+
+halt:
 		cli
 		hlt
 	.Lhang:
@@ -182,6 +195,33 @@ enable_paging:
 		orl 	$PAGING_BIT, %eax
 		movl	%eax, %cr0
 		ret
+
+
+.section .text
+
+longmode_start:
+.code64
+	
+		// clear the segment registers
+		mov	$0, %ax
+		mov	%ax, %ss
+		mov	%ax, %ds
+		mov	%ax, %es
+		mov	%ax, %fs
+		mov	%ax, %gs
+
+		// OKAY means we are in full long mode
+		movq	$0x2f592f412f4b2f4f, %rax
+		movq	%rax, (0xb8000)
+
+		call	main64
+
+
+		// returned from main
+		movq	$0x2f542f4c2f412f48, %rax
+		movq	%rax, (0xb8f98)
+		jmp 	halt
+
 
 
 .section .rodata
