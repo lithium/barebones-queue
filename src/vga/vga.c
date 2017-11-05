@@ -20,16 +20,23 @@ int Printxy(int x, int y, char *str, uint8_t colors)
 
 static uint8_t _cursorRow = 0;
 static uint8_t _cursorCol = 0;
+static uint8_t _currentColor = 7;
 
-int Print(char *str, uint8_t colors)
+int PrintColor(uint8_t color) {
+	_currentColor = color;
+}
+
+int Print(char *str)
 {
-	int ret = Printxy(_cursorCol, _cursorRow, str, colors);
+	int ret = Printxy(_cursorCol, _cursorRow, str, _currentColor);
 	_cursorCol = (_cursorCol + ret) % VGA_NUM_COLS;
+
+	CursorMoveto(_cursorCol, _cursorRow);
 	return ret;
 }
-int Println(char *str, uint8_t colors)
+int Println(char *str)
 {
-	int ret = Print(str, colors);
+	int ret = Print(str);
 
 	_cursorCol = 0;
 	if (_cursorRow < VGA_NUM_ROWS-1) {

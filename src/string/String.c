@@ -19,3 +19,20 @@ void *Memset(void *b, int c, int len)
 		*(char *)b++ = c;
 	}
 }
+
+
+char *Hexstring(char *buf, int buf_size, uint64_t value)
+{
+	uint64_t mask = 0xF000000000000000;
+	int i=0;
+
+	while (i < buf_size && mask) {
+		char c = (value & mask)	>> (15 - i)*4;
+		buf[i] = (c < 10) ? '0'+c : 'a'+(c-10);
+
+		i = i+1;
+		mask = mask >> 4;
+	}
+
+	return buf;
+}

@@ -9,8 +9,9 @@
 
 
 int Printxy(int x, int y, char *str, uint8_t colors);
-int Print(char *str, uint8_t colors);
-int Println(char *str, uint8_t colors);
+int PrintColor(uint8_t color);
+int Print(char *str);
+int Println(char *str);
 void ScrollUp(int numLines, uint8_t clearColor);
 
 void CursorDisable();
