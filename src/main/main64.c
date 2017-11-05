@@ -61,6 +61,14 @@ void main64()
 
 		AcpiInfo acpiInfo;
 		AcpiInfo_create(&acpiInfo, mb2info.oldAcpiTag->rsdp);
+
+		Print("Number of Processors: 0x");
+		Println(Hexstring(hexstring, 16, acpiInfo.madtProcessorEntryCount));
+		for (int i=0; i < acpiInfo.madtProcessorEntryCount; i++) {
+			Print("  APIC ID: ");
+			Println(Hexstring(hexstring, 16, acpiInfo.madtProcessorEntries[i]->apicId));
+		}
+
 	}
 
 	if (mb2info.newAcpiTag) {

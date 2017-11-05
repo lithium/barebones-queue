@@ -59,7 +59,10 @@ typedef struct AcpiInfo {
 	struct acpi_rsdt *rsdt;
 
 	struct acpi_fadt *fadt;
+
 	struct acpi_madt *madt;
+	struct acpi_madt_processor_local_apic *madtProcessorEntries[99];  
+	int madtProcessorEntryCount;
 } AcpiInfo;
 
 

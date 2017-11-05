@@ -38,6 +38,7 @@ int AcpiInfo_create(AcpiInfo *self, void *rsdp)
 	self->rsdt = (struct acpi_rsdt *)self->rsdp1->rsdtAddress;
 	int num_entries = (self->rsdt->header.length - sizeof(struct acpi_sdt_header)) / 4;
 
+
 	Print(" numEntries=0x");
 	Println(Hexstring(buf, 16, num_entries));
 
@@ -58,6 +59,7 @@ int AcpiInfo_create(AcpiInfo *self, void *rsdp)
 		else if (StringEq(header->signature, "APIC", 4)) {
 			self->madt = (struct acpi_madt *)header;
 
+			self->madtProcessorEntryCount = 0;
 			int ofs = 44;
 			while (ofs < header->length) {
 				struct acpi_madt_header *apic_header = (struct acpi_madt_header *)((uint8_t*)self->madt + ofs);
@@ -65,7 +67,13 @@ int AcpiInfo_create(AcpiInfo *self, void *rsdp)
 				Print("      type=0x");
 				Println(Hexstring(buf,16, apic_header->type & 0xFF));
 
+				if (apic_header->type == MADT_APIC_PROCESSOR_LOCAL_APIC) {
+					self->madtProcessorEntries[self->madtProcessorEntryCount] = (struct acpi_madt_processor_local_apic *)apic_header;
+					self->madtProcessorEntryCount += 1;
+				}
+
 				ofs += apic_header->length;
+
 
 			}
 		}
