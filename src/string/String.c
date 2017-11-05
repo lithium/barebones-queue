@@ -27,7 +27,7 @@ char *Hexstring(char *buf, int buf_size, uint64_t value)
 	int i=0;
 
 	while (i < buf_size && mask) {
-		char c = (value & mask)	>> (15 - i)*4;
+		uint64_t c = (value & mask)	>> (15 - i)*4;
 		buf[i] = (c < 10) ? '0'+c : 'a'+(c-10);
 
 		i = i+1;

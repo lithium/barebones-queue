@@ -19,8 +19,13 @@ typedef struct multiboot2_information {
 	struct multiboot_tag_bootdev *bootDeviceTag;
 
 	struct multiboot_tag_mmap *memoryMapTag;
-	multiboot_memory_map_t *memoryMap[MAX_MEMORY_MAP_SIZE];
-	int memoryMapSize;
+
+	struct multiboot_tag_new_acpi *newAcpiTag;
+	struct multiboot_tag_old_acpi *oldAcpiTag;
+
+	struct multiboot_tag_smbios *smbiosTag;
+
+	struct multiboot_tag_elf_sections *elfSectionsTag;
 
 
 	// TODO: unimplemented

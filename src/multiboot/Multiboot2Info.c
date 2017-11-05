@@ -29,28 +29,25 @@ void Multiboot2Info_create(Multiboot2Info *self, uint64_t addr)
 				self->bootDeviceTag = (struct multiboot_tag_bootdev *)tag;
 				break;
 
-			case MULTIBOOT_TAG_TYPE_MMAP: {
-				multiboot_memory_map_t *mmap;
-
+			case MULTIBOOT_TAG_TYPE_MMAP: 
 				self->memoryMapTag = (struct multiboot_tag_mmap *)tag;
-
-
-				self->memoryMapSize = 0;
-				mmap = self->memoryMapTag->entries;
-				while ((uint8_t*)mmap < (uint8_t*)tag+tag->size) {
-					self->memoryMap[self->memoryMapSize] = mmap;
-
-					mmap += self->memoryMapTag->entry_size;
-					self->memoryMapSize += 1;
-
-					if (self->memoryMapSize >= MAX_MEMORY_MAP_SIZE)	{
-						break;
-					}
-				}
-
-
 				break;
-			}
+
+			case MULTIBOOT_TAG_TYPE_ACPI_NEW: 
+				self->newAcpiTag = (struct multiboot_tag_new_acpi *)tag;
+				break;
+
+			case MULTIBOOT_TAG_TYPE_ACPI_OLD: 
+				self->oldAcpiTag = (struct multiboot_tag_old_acpi *)tag;
+				break;
+
+			case MULTIBOOT_TAG_TYPE_SMBIOS: 
+				self->smbiosTag = (struct multiboot_tag_smbios *)tag;
+				break;
+
+			case MULTIBOOT_TAG_TYPE_ELF_SECTIONS: 
+				self->elfSectionsTag = (struct multiboot_tag_elf_sections *)tag;
+				break;
 
 		}
 

@@ -27,10 +27,42 @@ void main64()
 	Print("Commandline: ");
 	Println(mb2info.commandLineTag->string);
 
+	if (mb2info.elfSectionsTag) {
+		Print("ELF Sections: count=0x");
+		Println(Hexstring(hexstring, 16, mb2info.elfSectionsTag->num));
+	}
+
 	if (mb2info.basicMeminfoTag) {
 		Print("Basic Meminfo: lower=0x");
 		Print(Hexstring(hexstring, 16, mb2info.basicMeminfoTag->mem_lower));
 		Print(" upper=0x");
-		Print(Hexstring(hexstring, 16, mb2info.basicMeminfoTag->mem_upper));
+		Println(Hexstring(hexstring, 16, mb2info.basicMeminfoTag->mem_upper));
 	}
+
+	if (mb2info.memoryMapTag) {
+		int entry_count = mb2info.memoryMapTag->size / mb2info.memoryMapTag->entry_size;
+		Print("Memory Map: numEntries=0x");
+		Println(Hexstring(hexstring,16, entry_count));
+		for (int i=0; i < entry_count; i++) {
+			multiboot_memory_map_t *mmap = ((uint8_t*)mb2info.memoryMapTag->entries + (i * mb2info.memoryMapTag->entry_size));
+			Print("  addr=0x");
+			Print(Hexstring(hexstring,16, mmap->addr));
+			Print(" len=0x");
+			Print(Hexstring(hexstring,16, mmap->len));
+			Print(" type=0x");
+			Println(Hexstring(hexstring,16, mmap->type));
+		}
+	}
+
+	if (mb2info.oldAcpiTag) {
+		Print("old ACPI: RSDPv1 size=0x");
+		Println(Hexstring(hexstring, 16, mb2info.oldAcpiTag->size));
+		// Println(mb2info.oldAcpiTag->rsdp);
+	}
+
+	if (mb2info.newAcpiTag) {
+		Print("New ACPI: RSDPv2 size=0x");
+		Println(Hexstring(hexstring, 16, mb2info.newAcpiTag->size));
+	}
+
 }
