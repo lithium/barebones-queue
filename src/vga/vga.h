@@ -8,8 +8,9 @@
 #define VGA_NUM_ROWS 25
 
 
-void Printxy(int x, int y, char *str, uint8_t colors);
-void Println(char *str, uint8_t colors);
+int Printxy(int x, int y, char *str, uint8_t colors);
+int Print(char *str, uint8_t colors);
+int Println(char *str, uint8_t colors);
 void ScrollUp(int numLines, uint8_t clearColor);
 
 void CursorDisable();

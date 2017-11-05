@@ -5,27 +5,40 @@
 static uint16_t *_VGAMEM = (uint16_t*)0xB8000;
 
 
-void Printxy(int x, int y, char *str, uint8_t colors)
+int Printxy(int x, int y, char *str, uint8_t colors)
 {
 	uint16_t pos = (y * VGA_NUM_COLS + x);
+	int ret = 0;
 
 	for (; *str != 0; str++) {
 		_VGAMEM[pos++] = *str | (colors<<8);
+		ret++;
 	}
-
+	return ret;
 }
 
 
-void Println(char *str, uint8_t colors)
-{
-	static uint8_t curLine = 0;
-	Printxy(0, curLine, str, colors);
+static uint8_t _cursorRow = 0;
+static uint8_t _cursorCol = 0;
 
-	if (curLine < VGA_NUM_ROWS-1) {
-		CursorMoveto(0, ++curLine);
+int Print(char *str, uint8_t colors)
+{
+	int ret = Printxy(_cursorCol, _cursorRow, str, colors);
+	_cursorCol = (_cursorCol + ret) % VGA_NUM_COLS;
+	return ret;
+}
+int Println(char *str, uint8_t colors)
+{
+	int ret = Print(str, colors);
+
+	_cursorCol = 0;
+	if (_cursorRow < VGA_NUM_ROWS-1) {
+		CursorMoveto(_cursorCol, ++_cursorRow);
 	} else {
 		ScrollUp(1, 7);
 	}
+
+	return ret;
 }
 void ScrollUp(int numRows, uint8_t clearColor)
 {

@@ -9,13 +9,6 @@ extern uint32_t multiboot2_info_addr;
 
 void main64() 
 {
-	Multiboot2Info mb2info;
-
-	Multiboot2Info_create(&mb2info, multiboot2_info_addr);
-
-	Println(mb2info.bootLoaderNameTag->string, 7);
-	Println(mb2info.commandLineTag->string, 7);
-
 	// char hellostring[10] = "hello 00\0\0";
 	// for (int i=0; i < 100; i++) {
 	// 	hellostring[6] = '0' + i / 10;
@@ -23,4 +16,13 @@ void main64()
 	// 	Println(hellostring, 7);
 	// }
 
+
+	Multiboot2Info mb2info;
+	Multiboot2Info_create(&mb2info, multiboot2_info_addr);
+
+	Print("Bootloader name: ", 7);
+	Println(mb2info.bootLoaderNameTag->string, 7);
+
+	Print("Commandline: ", 7);
+	Println(mb2info.commandLineTag->string, 7);
 }
