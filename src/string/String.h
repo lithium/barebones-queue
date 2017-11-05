@@ -5,6 +5,7 @@
 
 
 void *Memset(void *b, int c, int len);
+void *Memcpy(void *dest, void *src, int len);
 
 int StringEq(char *s1, char *s2, int len);
 

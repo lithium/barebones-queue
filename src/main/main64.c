@@ -3,6 +3,7 @@
 
 #include "string/String.h"
 #include "multiboot/Multiboot2Info.h"
+#include "acpi/acpi.h"
 
 
 extern uint32_t multiboot2_magic;
@@ -57,7 +58,9 @@ void main64()
 	if (mb2info.oldAcpiTag) {
 		Print("old ACPI: RSDPv1 size=0x");
 		Println(Hexstring(hexstring, 16, mb2info.oldAcpiTag->size));
-		// Println(mb2info.oldAcpiTag->rsdp);
+
+		AcpiInfo acpiInfo;
+		AcpiInfo_create(&acpiInfo, mb2info.oldAcpiTag->rsdp);
 	}
 
 	if (mb2info.newAcpiTag) {

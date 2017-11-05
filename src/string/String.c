@@ -4,12 +4,14 @@
 int StringEq(char *s1, char *s2, int len)
 {
 	while (len--) {
-		int ret = *s1 - *s2;
-		if (ret != 0) {
-			return ret;
+		char c= *s1 - *s2;
+		if (c != 0) {
+			return 0;
 		}
+		s1++;
+		s2++;
 	}
-	return 0;
+	return 1;
 }
 
 
@@ -18,6 +20,15 @@ void *Memset(void *b, int c, int len)
 	while (len--) {
 		*(char *)b++ = c;
 	}
+	return b;
+}
+
+
+void *Memcpy(void *dst, void *src, int len) {
+	while (len--) {
+		*(uint8_t *)(dst + len) = *(uint8_t *)(src +len);
+	}
+	return dst;
 }
 
 
@@ -33,6 +44,7 @@ char *Hexstring(char *buf, int buf_size, uint64_t value)
 		i = i+1;
 		mask = mask >> 4;
 	}
+	buf[i] = 0;
 
 	return buf;
 }

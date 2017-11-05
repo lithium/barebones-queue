@@ -5,16 +5,16 @@
 static uint16_t *_VGAMEM = (uint16_t*)0xB8000;
 
 
-int Printxy(int x, int y, char *str, uint8_t colors)
+int Printxy(int x, int y, char *str, int len, uint8_t colors)
 {
 	uint16_t pos = (y * VGA_NUM_COLS + x);
-	int ret = 0;
+	int i = 0;
 
-	for (; *str != 0; str++) {
-		_VGAMEM[pos++] = *str | (colors<<8);
-		ret++;
+	while ((len == -1 || i < len) && (str[i] != 0)) {
+		_VGAMEM[pos+i] = str[i] | (colors<<8);
+		i++;
 	}
-	return ret;
+	return i;
 }
 
 
@@ -26,17 +26,17 @@ int PrintColor(uint8_t color) {
 	_currentColor = color;
 }
 
-int Print(char *str)
+int Printn(char *str, int len)
 {
-	int ret = Printxy(_cursorCol, _cursorRow, str, _currentColor);
+	int ret = Printxy(_cursorCol, _cursorRow, str, len, _currentColor);
 	_cursorCol = (_cursorCol + ret) % VGA_NUM_COLS;
 
 	CursorMoveto(_cursorCol, _cursorRow);
 	return ret;
 }
-int Println(char *str)
+int Printnln(char *str, int len)
 {
-	int ret = Print(str);
+	int ret = Printn(str, len);
 
 	_cursorCol = 0;
 	if (_cursorRow < VGA_NUM_ROWS-1) {
