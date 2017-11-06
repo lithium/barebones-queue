@@ -57,6 +57,7 @@ struct acpi_address
 typedef struct AcpiInfo {
 	struct acpi_rsdp1 *rsdp1;
 	struct acpi_rsdt *rsdt;
+	int rsdtEntryCount;
 
 	struct acpi_fadt *fadt;
 

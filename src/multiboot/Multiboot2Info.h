@@ -5,6 +5,7 @@
 
 #include "multiboot/multiboot2.h"
 
+
 #define MAX_MEMORY_MAP_SIZE 99
 
 typedef struct multiboot2_information {
@@ -35,5 +36,6 @@ typedef struct multiboot2_information {
 
 
 void Multiboot2Info_create(Multiboot2Info *self, uint64_t multiboot2_info_addr);
+void Multiboot2Info_print(Multiboot2Info *self);
 
 #endif

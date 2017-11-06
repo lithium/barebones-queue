@@ -1,5 +1,6 @@
 #include "multiboot/Multiboot2Info.h"
 #include "string/String.h"
+#include "vga/vga.h"
 
 
 void Multiboot2Info_create(Multiboot2Info *self, uint64_t addr)
@@ -54,4 +55,56 @@ void Multiboot2Info_create(Multiboot2Info *self, uint64_t addr)
 
 		tag = (struct multiboot_tag *)((uint8_t *)tag + ((tag->size + 7) & ~7));
 	}
+}
+
+
+void Multiboot2Info_print(Multiboot2Info *self)
+{
+	char hexstring[17];
+	hexstring[16] = 0;
+
+
+	Print("Bootloader name: ");
+	Println(self->bootLoaderNameTag->string);
+
+	Print("Commandline: ");
+	Println(self->commandLineTag->string);
+
+	if (self->elfSectionsTag) {
+		Print("ELF Sections: count=0x");
+		Println(Hexstring(hexstring, 16, self->elfSectionsTag->num));
+	}
+
+	if (self->basicMeminfoTag) {
+		Print("Basic Meminfo: lower=0x");
+		Print(Hexstring(hexstring, 16, self->basicMeminfoTag->mem_lower));
+		Print(" upper=0x");
+		Println(Hexstring(hexstring, 16, self->basicMeminfoTag->mem_upper));
+	}
+
+	if (self->memoryMapTag) {
+		int entry_count = self->memoryMapTag->size / self->memoryMapTag->entry_size;
+		Print("Memory Map: numEntries=0x");
+		Println(Hexstring(hexstring,16, entry_count));
+		for (int i=0; i < entry_count; i++) {
+			multiboot_memory_map_t *mmap = ((uint8_t*)self->memoryMapTag->entries + (i * self->memoryMapTag->entry_size));
+			Print("  addr=0x");
+			Print(Hexstring(hexstring,16, mmap->addr));
+			Print(" len=0x");
+			Print(Hexstring(hexstring,16, mmap->len));
+			Print(" type=0x");
+			Println(Hexstring(hexstring,16, mmap->type));
+		}
+	}
+
+	if (self->oldAcpiTag) {
+		Print("old ACPI: RSDPv1 size=0x");
+		Println(Hexstring(hexstring, 16, self->oldAcpiTag->size));
+	}
+
+	if (self->newAcpiTag) {
+		Print("New ACPI: RSDPv2 size=0x");
+		Println(Hexstring(hexstring, 16, self->newAcpiTag->size));
+	}
+
 }
