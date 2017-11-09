@@ -23,8 +23,10 @@ struct idt_gate {
 
 struct interrupt_frame
 {
-    uint64_t number;
-    uint64_t error_code, rip, cs, rflags, rsp, ss;
+	uint64_t cr2;
+	
+	uint64_t number;
+	uint64_t error_code, rip, cs, rflags, rsp, ss;
 } __attribute__((packed));
 
 
