@@ -2,6 +2,14 @@ ENTRY(start)
 
 SECTIONS
 {
+	. = 0x91000;
+
+	.text :
+	{
+		*(.realmode)
+	}
+
+
 	. = 1M;
 
 	.rodata :

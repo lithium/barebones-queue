@@ -14,9 +14,17 @@ inline uint8_t INB(uint16_t port) __attribute__((always_inline))
 
 inline void OUTB(uint16_t port, uint8_t value) __attribute__((always_inline))
 {
-   asm volatile ("outb %%al,%%dx"
+	asm volatile ("outb %%al,%%dx"
    			: 
    			:"d" (port), "a" (value));
 }
+
+inline void LIDT(long *idtAddress) __attribute__((always_inline))
+{
+	asm volatile ("lidt %0" 
+			:
+			: "m"(*idtAddress));
+}
+
 
 #endif

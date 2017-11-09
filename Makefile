@@ -17,10 +17,11 @@ ISO_STAGING := $(OBJ)/iso
 KERNEL := $(OBJ)/kernel.elf
 BOOTABLE_ISO := barebones-longmode.iso
 
-assembler_sources := $(wildcard src/**/*.s)
+assembler_sources := $(shell find src/ -type f -name '*.s')
 assembler_objects := $(addprefix $(OBJ)/, $(notdir $(assembler_sources:%.s=%.o)))
 
-c_sources := $(wildcard src/**/*.c)
+# c_sources := $(wildcard src/**/*.c)
+c_sources := $(shell find src/ -type f -name '*.c')
 c_objects := $(addprefix $(OBJ)/, $(notdir $(c_sources:%.c=%.o)))
 
 grub_config := src/boot/grub.cfg
@@ -35,9 +36,17 @@ iso: $(BOOTABLE_ISO)
 $(OBJ)/%.o: src/**/%.s
 	@mkdir -p $(OBJ)
 	$(GAS) $(ASFLAGS) $^ -o $@
+	
+$(OBJ)/%.o: src/**/**/%.s
+	@mkdir -p $(OBJ)
+	$(GAS) $(ASFLAGS) $^ -o $@
 
 # assemble .c -> .o
 $(OBJ)/%.o: src/**/%.c
+	@mkdir -p $(OBJ)
+	$(CC) $(CFLAGS) -c $^ -o $@
+
+$(OBJ)/%.o: src/**/**/%.c
 	@mkdir -p $(OBJ)
 	$(CC) $(CFLAGS) -c $^ -o $@
 

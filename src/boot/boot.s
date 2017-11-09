@@ -12,11 +12,26 @@ multiboot2_info_addr:
 		.long	0
 
 
+
+.section .realmode
+.code16
+
+real_to_longmode:
+		movb	$'R', %al
+		movb	$0, %bh
+		movb	$24, %cx
+		int	$0x10
+		
+		hlt
+
+
 .section .text
 .code32
 
 
 start:
+		//arrived from multiboot in protected mode
+
 		// save multiboot information for kernel
 		movl	%eax, (multiboot2_magic)
 		movl	%ebx, (multiboot2_info_addr)
@@ -27,20 +42,8 @@ start:
 		call	clear_screen
 		// cleared screen indicates we booted
 
+		call	protected_to_longmode
 
-		call	check_cpuid
-		call	check_longmode
-
-		// print OK,  means	longmode is possible
-		movl	$0xb8000, %edi
-		movl	$0x4f4b4f4f, (%edi)
-
-		call	setup_pagetables
-		call	enable_paging
-
-		// print OK64 -- we're in compatability longmode
-		movl	$0xb8004, %edi
-		movl	$0x4f344f36, (%edi)
 
 	.Lmain:
 		lgdt	GDT.pointer
@@ -48,7 +51,26 @@ start:
 		// 8 is the offset in GDT to the code segment
 		ljmp	$8, $longmode_start
 
+longmode_start:
+.code64
+		mov	$0, %ax
+		mov	%ax, %ss
+		mov	%ax, %ds
+		mov	%ax, %es
+		mov	%ax, %fs
+		mov	%ax, %gs
 
+		call	main64
+
+		// returned from main
+		movq	$0x2f542f4c2f412f48, %rax
+		movq	%rax, (0xb8f98)
+		jmp 	halt
+
+
+
+
+.code32
 
 
 /*
@@ -85,6 +107,12 @@ clear_screen:
 		ret
 
 
+protected_to_longmode:
+		call	check_cpuid
+		call	check_longmode
+		call	setup_pagetables
+		call	enable_paging
+		ret
 
 check_cpuid:
 	.set CPUID_BIT,  1<<21
@@ -199,28 +227,6 @@ enable_paging:
 
 .section .text
 
-longmode_start:
-.code64
-	
-		// clear the segment registers
-		mov	$0, %ax
-		mov	%ax, %ss
-		mov	%ax, %ds
-		mov	%ax, %es
-		mov	%ax, %fs
-		mov	%ax, %gs
-
-		// OKAY means we are in full long mode
-		movq	$0x2f592f412f4b2f4f, %rax
-		movq	%rax, (0xb8000)
-
-		call	main64
-
-
-		// returned from main
-		movq	$0x2f542f4c2f412f48, %rax
-		movq	%rax, (0xb8f98)
-		jmp 	halt
 
 
 
@@ -239,7 +245,6 @@ GDT:
 GDT.pointer:
 		.word (. - GDT - 1)
 		.quad GDT
-
 
 
 
