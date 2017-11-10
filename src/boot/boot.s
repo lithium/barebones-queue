@@ -2,7 +2,6 @@
 .global multiboot2_info_addr
 .global multiboot2_magic
 
-
 .section .bss
 
 multiboot2_magic:
@@ -168,29 +167,40 @@ check_longmode:
 setup_pagetables:
 
 		// p4[511] -> p4 
-		movl	$p4_table, %eax
-		orl 	$0b11, %eax // present + writable
+		mov	$p4_table, %eax
+		or 	$0b11, %eax // present + writable
 		mov 	%eax, (p4_table+511*8)
 
 		// p4[0] -> p3
-		movl 	$p3_table, %eax
-		orl 	$0b11, %eax
-		movl 	%eax, (p4_table)
+		mov 	$p3_table, %eax
+		or 	$0b11, %eax
+		mov 	%eax, (p4_table)
 
 		// p3[0] -> p2
-		movl 	$p2_table, %eax
-		orl 	$0b11, %eax
-		movl 	%eax, (p3_table)
+		mov 	$p2_table, %eax
+		or 	$0b11, %eax
+		mov 	%eax, (p3_table)
+
+		// p3[1] -> apic_table
+		mov	$apic_table, %eax
+		or	$0b11, %eax
+		mov	%eax, (p3_table+1*8)
+
+		// hardcode virtual0x40000000 -> 0xfec00000 for apic mmap
+		mov	$0xfec, %eax
+		shl	$21, %eax
+		or	$0b10000011, %eax
+		mov	%eax, (apic_table)
 
 		// identity map first 1G
-		movl	$0, %ecx
+		mov	$0, %ecx
 	.Lidentity_map_p2:
-		movl	$0x200000, %eax 			// 2MB pages
-		mull 	%ecx
-		orl 	$0b10000011, %eax			// huge + present + writable
-		movl 	%eax, p2_table(, %ecx, 8)
+		mov	$0x200000, %eax 			// 2MB pages
+		mul 	%ecx
+		or 	$0b10000011, %eax			// huge + present + writable
+		mov 	%eax, p2_table(, %ecx, 8)
 
-		incl 	%ecx
+		inc 	%ecx
 		cmp     $512, %ecx
 		jne 	.Lidentity_map_p2
 
@@ -268,5 +278,9 @@ p2_table:
 .align 4096
 	.skip 4096
 p1_table:
+.align 4096
+	.skip 4096
+
+apic_table:
 .align 4096
 	.skip 4096

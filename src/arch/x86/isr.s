@@ -175,11 +175,16 @@ isr20:
 	jmp	isr_common_stub
 
 isr_common_stub:
-		// pass in a pointer to the stackframe as first and only argument to handler
+		// push additional registers onto the isr frame
 		mov	%cr2, %rax
 		pushq	%rax
-		
+
+		// pass in a pointer to the stackframe as first and only argument to handler
 		mov	%rsp, %rdi
+
 		call	fault_handler
+
+		popq	%rax
+		
 		add	$16, %esp 		// erase ISR stack frame
 		iretq
