@@ -16,11 +16,10 @@ multiboot2_info_addr:
 .code16
 
 real_to_longmode:
-		movb	$'R', %al
-		movb	$0, %bh
-		movb	$24, %cx
-		int	$0x10
-		
+		movl	$0xb8000, %di
+		movl	$0x700, %ax		// clear screen to be gray on black
+		movl 	$(80*25), %cx
+	rep stosw
 		hlt
 
 
@@ -185,12 +184,6 @@ setup_pagetables:
 		mov	$apic_table, %eax
 		or	$0b11, %eax
 		mov	%eax, (p3_table+1*8)
-
-		// hardcode virtual0x40000000 -> 0xfec00000 for apic mmap
-		mov	$0xfec, %eax
-		shl	$21, %eax
-		or	$0b10000011, %eax
-		mov	%eax, (apic_table)
 
 		// identity map first 1G
 		mov	$0, %ecx
