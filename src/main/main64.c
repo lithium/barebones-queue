@@ -20,6 +20,7 @@ extern uint32_t multiboot2_info_addr;
 
 
 
+
 void main64() 
 {
 	// recursively mapped page table pointers
@@ -48,15 +49,20 @@ void main64()
 	// load interrupts
 	IdtLoad();
 
-	//disable PIC
-	OUTB(0xa1, 0xFF);
-	OUTB(0x21, 0xFF);
+	//setup PIC/PIT
+	PicRemap();
+	OUTB(PORT_PIT_MODE, 0x34); // ch=0 access=lobyte/hibyte operating=rate bcd=0
+	PitSetFrequency(50000);  //each tick is 20us
 
-	// enable interrupts
+	// start interrupts
 	STI();
 
+	while (1) {
+		PicSleepTicks(5000);
+		Println("tick");
+	}
 
-
+/*	
 
 	// uint32_t *ioapic_base = acpiInfo.madtIoApicEntries[0]->ioApicAddress;
 	uint32_t *ioapic_base = apic_base_address();
@@ -70,6 +76,10 @@ void main64()
 
 	Print("Local APIC Version: 0x");
 	Println(Hexstring(hexbuf,16, apic_mmio_read(virtual_apic_base, 0x30)));
+
+	//disable PIC
+	OUTB(0xa1, 0xFF);
+	OUTB(0x21, 0xFF);
 
 	// enable local io apic with spurious vector=FF
 	apic_mmio_write(virtual_apic_base, 0x0F0, 0x1FF);
@@ -96,11 +106,11 @@ void main64()
 	while (*spinlock != 0x4242) {
 
 	}
+*/
 
 
 
 	Println("Yay!");
 }
-
 
 
