@@ -1,5 +1,6 @@
 #include "pit.h"
 #include "arch/x86.h"
+#include "vga/vga.h"
 
 static uint32_t pic_sleep_ticks_count = 0;
 static uint8_t pic_sleep_ticks_locked = 0;
@@ -18,13 +19,16 @@ void PicEndOfInterrupt()
 }
 
 
-void PicRemap()
+void PicRemap(uint8_t offset)
 {
+	uint8_t master_mask = INB(PORT_PIC_MASTER_DATA);
+	uint8_t slave_mask = INB(PORT_PIC_SLAVE_DATA);
+
 	OUTB(PORT_PIC_MASTER_CMD, 0x11);
 	OUTB(PORT_PIC_SLAVE_CMD, 0x11);
 
-	OUTB(PORT_PIC_MASTER_DATA, 0x20);
-	OUTB(PORT_PIC_SLAVE_DATA, 0x28);
+	OUTB(PORT_PIC_MASTER_DATA, offset);
+	OUTB(PORT_PIC_SLAVE_DATA, offset+8);
 
 	OUTB(PORT_PIC_MASTER_DATA, 0x04);
 	OUTB(PORT_PIC_SLAVE_DATA, 0x02);
@@ -32,8 +36,8 @@ void PicRemap()
 	OUTB(PORT_PIC_MASTER_DATA, 0x01);
 	OUTB(PORT_PIC_SLAVE_DATA, 0x01);
 
-	OUTB(PORT_PIC_MASTER_DATA, 0x00);
-	OUTB(PORT_PIC_SLAVE_DATA, 0x00);
+	OUTB(PORT_PIC_MASTER_DATA, master_mask);
+	OUTB(PORT_PIC_SLAVE_DATA, slave_mask);
 }
 
 
@@ -41,6 +45,7 @@ void PicSleepTicks(int ticks)
 {
 	pic_sleep_ticks_locked = 1;
 	pic_sleep_ticks_count = ticks;
+	Println("locked");
 	while (pic_sleep_ticks_locked) {
 		//spinlock
 	}
@@ -48,7 +53,6 @@ void PicSleepTicks(int ticks)
 
 void PicHandleTick()
 {
-	pic_sleep_ticks_count -= 1;
 	while (pic_sleep_ticks_count--) {
 		//spindown
 	}

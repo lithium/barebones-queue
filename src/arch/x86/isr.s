@@ -96,7 +96,6 @@ isr_vector_table:
 	isr18:	ISR_noerrorcode $18 	// machine check exception
 	isr19:	ISR_noerrorcode $19 	// SIMD floating point exception
 	isr20:	ISR_noerrorcode $20 	// virtualization exception
-
 	isr21:	ISR_noerrorcode $21 	
 	isr22:	ISR_noerrorcode $22 	
 	isr23:	ISR_noerrorcode $23 	
@@ -107,8 +106,8 @@ isr_vector_table:
 	isr28:	ISR_noerrorcode $28 	
 	isr29:	ISR_noerrorcode $29 	
 	isr30:	ISR_noerrorcode $30 	
-
         isr31:  ISR_noerrorcode $31      
+
         isr32:  ISR_noerrorcode $32
         isr33:  ISR_noerrorcode $33      
         isr34:  ISR_noerrorcode $34      
@@ -118,7 +117,6 @@ isr_vector_table:
         isr38:  ISR_noerrorcode $38      
         isr39:  ISR_noerrorcode $39      
         isr40:  ISR_noerrorcode $40      
-
         isr41:  ISR_noerrorcode $41      
         isr42:  ISR_noerrorcode $42      
         isr43:  ISR_noerrorcode $43      

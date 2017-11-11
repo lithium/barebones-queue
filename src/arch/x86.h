@@ -29,11 +29,11 @@ inline void OUTB(uint16_t port, uint8_t value) __attribute__((always_inline))
    			:"d" (port), "a" (value));
 }
 
-inline void LIDT(uint64_t idtAddress) __attribute__((always_inline))
+inline void LIDT(long *idtAddress) __attribute__((always_inline))
 {
 	asm volatile ("lidt %0" 
 			:
-			: "m"(idtAddress));
+			: "m"(*idtAddress));
 }
 
 

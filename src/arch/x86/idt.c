@@ -36,9 +36,9 @@ extern void isr26();
 extern void isr27();
 extern void isr28();
 extern void isr29();
-
 extern void isr30();
 extern void isr31();
+
 extern void isr32();
 extern void isr33();
 extern void isr34();
@@ -47,7 +47,6 @@ extern void isr36();
 extern void isr37();
 extern void isr38();
 extern void isr39();
-
 extern void isr40();
 extern void isr41();
 extern void isr42();

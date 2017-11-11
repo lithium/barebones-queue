@@ -50,7 +50,7 @@ void main64()
 	IdtLoad();
 
 	//setup PIC/PIT
-	PicRemap();
+	PicRemap(32);
 	OUTB(PORT_PIT_MODE, 0x34); // ch=0 access=lobyte/hibyte operating=rate bcd=0
 	PitSetFrequency(50000);  //each tick is 20us
 

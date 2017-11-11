@@ -17,7 +17,7 @@
 
 void PitSetFrequency(uint16_t frequency);
 
-void PicRemap();
+void PicRemap(uint8_t offset);
 
 
 
