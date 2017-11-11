@@ -21,166 +21,116 @@
 .global isr18
 .global isr19
 .global isr20
+
+.global isr21
+.global isr22
+.global isr23
+.global isr24
+.global isr25
+.global isr26
+.global isr27
+.global isr28
+.global isr29
+
+.global isr30
+.global isr31
+.global isr32
+.global isr33
+.global isr34
+.global isr35
+.global isr36
+.global isr37
+.global isr38
+.global isr39
+
+.global isr40
+.global isr41
+.global isr42
+.global isr43
+.global isr44
+.global isr45
+.global isr46
+.global isr47
+.global isr48
+
 .global isrFF
 
 .section .text
 .code64
 
 
-
-isr0:
-	// divide by zero
-	cli
-	pushq	$0	// push a zero error code
-	pushq	$0	// interrupt number
-	jmp	isr_common_stub
-
-isr1:
-	// debug exception
-	cli
-	pushq	$0	// error code
-	pushq	$1	// interrupt number
-	jmp	isr_common_stub
-
-isr2:
-	// non-maskable interrupt
-	cli
-	pushq	$0	// error code
-	pushq	$2	// interrupt number
-	jmp	isr_common_stub
-
-isr3:
-	// breakpoint exception 
-	cli
-	pushq	$0	// error code
-	pushq	$3	// interrupt number
-	jmp	isr_common_stub
-
-isr4:
-	// overflow exception 
-	cli
-	pushq	$0	// error code
-	pushq	$4	// interrupt number
-	jmp	isr_common_stub
-
-isr5:
-	// bound range exception 
-	cli
-	pushq	$0	// error code
-	pushq	$5	// interrupt number
-	jmp	isr_common_stub
-
-isr6:
-	// invalid opcode exception 
-	cli
-	pushq	$0	// error code
-	pushq	$6	// interrupt number
-	jmp	isr_common_stub
-
-isr7:
-	// device not available exception 
-	cli
-	pushq	$0	// error code
-	pushq	$7	// interrupt number
-	jmp	isr_common_stub
-
-isr8:
-	// double fault exception 
-	cli
-	// errocode pushed by cpu
-	pushq	$8	// interrupt number
-	jmp	isr_common_stub
-
-isr9:
-	// coprocessor segment overrun
-	cli
-	pushq	$0	// error code
-	pushq	$9	// interrupt number
-	jmp	isr_common_stub
-
-isr10:
-	// invalid tss exception 
-	cli
-	// errocode pushed by cpu
-	pushq	$10	// interrupt number
-	jmp	isr_common_stub
-
-isr11:
-	// segment not present 
-	cli
-	// errocode pushed by cpu
-	pushq	$11	// interrupt number
-	jmp	isr_common_stub
-
-isr12:
-	// stack fault exception
-	cli
-	// errocode pushed by cpu
-	pushq	$12	// interrupt number
-	jmp	isr_common_stub
-
-isr13:
-	// general protection exception
-	cli
-	// errocode pushed by cpu
-	pushq	$13	// interrupt number
-	jmp	isr_common_stub
-
-isr14:
-	// pagefault exception
-	cli
-	// errocode pushed by cpu
-	pushq	$14	// interrupt number
-	jmp	isr_common_stub
-
-isr15:
-	// RESERVED
+.macro ISR_noerrorcode vector
 	cli
 	pushq	$0
-	pushq	$15	// interrupt number
+	pushq 	\vector
 	jmp	isr_common_stub
+.endm
 
-isr16:
-	// floating point error
+.macro ISR vector
 	cli
-	pushq	$0	// error code
-	pushq	$16	// interrupt number
+	pushq 	\vector
 	jmp	isr_common_stub
+.endm
 
-isr17:
-	// alignment check exception
-	cli
-	pushq	$0	// error code
-	pushq	$17	// interrupt number
-	jmp	isr_common_stub
 
-isr18:
-	// machine check exception
-	cli
-	pushq	$0	// error code
-	pushq	$18	// interrupt number
-	jmp	isr_common_stub
+isr_vector_table:
 
-isr19:
-	// SIMD floating point exception
-	cli
-	pushq	$0	// error code
-	pushq	$19	// interrupt number
-	jmp	isr_common_stub
+	isr0:	ISR_noerrorcode $0 	// divide by zero
+	isr1:	ISR_noerrorcode $1 	// debug exception
+	isr2:	ISR_noerrorcode $2 	// non-maskable interrupt
+	isr3:	ISR_noerrorcode $3 	// breakpoint exception
+	isr4:	ISR_noerrorcode $4 	// overflow exception
+	isr5:	ISR_noerrorcode $5 	// bound range exception
+	isr6:	ISR_noerrorcode $6 	// invalid opcode exception
+	isr7:	ISR_noerrorcode $7 	// device not available exception
+	isr8:	ISR $8 			// double fault exception
+	isr9:	ISR_noerrorcode $9 	// coprocessor segment overrun
+	isr10:	ISR $10 			// invalid tss exception
+	isr11:	ISR $11 			// segment not present
+	isr12:	ISR $12 			// stack fault exception
+	isr13:	ISR $13 			// general protection exception
+	isr14:	ISR $14 			// pagefault exception
+	isr15:	ISR_noerrorcode $15 	// RESERVED
+	isr16:	ISR_noerrorcode $16 	// floating point error
+	isr17:	ISR_noerrorcode $17 	// alignment check exception
+	isr18:	ISR_noerrorcode $18 	// machine check exception
+	isr19:	ISR_noerrorcode $19 	// SIMD floating point exception
+	isr20:	ISR_noerrorcode $20 	// virtualization exception
 
-isr20:
-	// virualization exception
-	cli
-	pushq	$0	// error code
-	pushq	$20	// interrupt number
-	jmp	isr_common_stub
+	isr21:	ISR_noerrorcode $21 	
+	isr22:	ISR_noerrorcode $22 	
+	isr23:	ISR_noerrorcode $23 	
+	isr24:	ISR_noerrorcode $24 	
+	isr25:	ISR_noerrorcode $25 	
+	isr26:	ISR_noerrorcode $26 	
+	isr27:	ISR_noerrorcode $27 	
+	isr28:	ISR_noerrorcode $28 	
+	isr29:	ISR_noerrorcode $29 	
+	isr30:	ISR_noerrorcode $30 	
 
-isrFF:
-	// apic spurious interrupt
-	cli
-	pushq	$0	// error code
-	pushq	$0xFF	// interrupt number
-	jmp	isr_common_stub
+        isr31:  ISR_noerrorcode $31      
+        isr32:  ISR_noerrorcode $32
+        isr33:  ISR_noerrorcode $33      
+        isr34:  ISR_noerrorcode $34      
+        isr35:  ISR_noerrorcode $35      
+        isr36:  ISR_noerrorcode $36      
+        isr37:  ISR_noerrorcode $37      
+        isr38:  ISR_noerrorcode $38      
+        isr39:  ISR_noerrorcode $39      
+        isr40:  ISR_noerrorcode $40      
+
+        isr41:  ISR_noerrorcode $41      
+        isr42:  ISR_noerrorcode $42      
+        isr43:  ISR_noerrorcode $43      
+        isr44:  ISR_noerrorcode $44      
+        isr45:  ISR_noerrorcode $45      
+        isr46:  ISR_noerrorcode $46      
+        isr47:  ISR_noerrorcode $47      
+        isr48:  ISR_noerrorcode $48      
+
+
+	isrFF:	ISR_noerrorcode $0xFF 	// apic spurious interrupt?
+
 
 isr_common_stub:
 		// push additional registers onto the isr frame

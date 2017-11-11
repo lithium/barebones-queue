@@ -7,6 +7,7 @@
 #include "apic/apic.h"
 #include "arch/x86.h"
 #include "arch/x86/idt.h"
+#include "pit/pit.h"
 
 
 extern uint32_t multiboot2_magic;
@@ -16,15 +17,23 @@ extern uint32_t multiboot2_info_addr;
 #define reg64_offset(base, regoffset)   (*(uint64_t *)(((uint8_t*)(base)) + (regoffset)))
 
 
+
+
+
 void main64() 
 {
+	// recursively mapped page table pointers
+	uint64_t *P4 = 0xfffffffffffff000;		// P4[0] 1G identity map
+	uint64_t *P3 = (uint64_t)P4<<9; 		// P3[0] 1G identity map, P3[1] apic mmio 
+	uint64_t *P2 = (uint64_t)P3<<9; 		// P2[*] 1G identity map,
+	uint64_t *apic_page = ((uint64_t)P3<<9) + 0x1000;	// apic mmio
+
 	char hexbuf[17]; // debug buffer
+
+
 
 	Multiboot2Info mb2info;
 	AcpiInfo acpiInfo;
-
-	// load interrupts
-	IdtLoad();
 
 	// parse multiboot2 information
 	Multiboot2Info_create(&mb2info, multiboot2_info_addr);
@@ -36,18 +45,24 @@ void main64()
 		AcpiInfo_print(&acpiInfo);
 	}
 
+	// load interrupts
+	IdtLoad();
+
+	//disable PIC
+	OUTB(0xa1, 0xFF);
+	OUTB(0x21, 0xFF);
+
+	// enable interrupts
+	STI();
+
+
+
+
 	// uint32_t *ioapic_base = acpiInfo.madtIoApicEntries[0]->ioApicAddress;
 	uint32_t *ioapic_base = apic_base_address();
 
 	Print("MSR APIC base address: 0x");
 	Println(Hexstring(hexbuf,16, ioapic_base));
-
-	// recursively mapped page table pointers
-	uint64_t *P4 = 0xfffffffffffff000;		// P4[0] 1G identity map
-	uint64_t *P3 = (uint64_t)P4<<9; 		// P3[0] 1G identity map, P3[1] apic mmio 
-	uint64_t *P2 = (uint64_t)P3<<9; 		// P2[*] 1G identity map,
-	uint64_t *apic_page = ((uint64_t)P3<<9) + 0x1000;	// apic mmio
-
 
 	// map 2MB for apic base at 0x40000000
 	apic_page[0] = (uint32_t)ioapic_base | 0x83;	// present | writable | 2MB
@@ -55,10 +70,6 @@ void main64()
 
 	Print("Local APIC Version: 0x");
 	Println(Hexstring(hexbuf,16, apic_mmio_read(virtual_apic_base, 0x30)));
-
-	//disable PIC
-	OUTB(0xa1, 0xFF);
-	OUTB(0x21, 0xFF);
 
 	// enable local io apic with spurious vector=FF
 	apic_mmio_write(virtual_apic_base, 0x0F0, 0x1FF);
@@ -85,6 +96,9 @@ void main64()
 	while (*spinlock != 0x4242) {
 
 	}
+
+
+
 	Println("Yay!");
 }
 

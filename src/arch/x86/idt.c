@@ -1,5 +1,6 @@
 #include "arch/x86/idt.h"
 #include "vga/vga.h"
+#include "string/String.h"
 
 
 struct idt_gate IDT64[256];
@@ -26,6 +27,37 @@ extern void isr17();
 extern void isr18();
 extern void isr19();
 extern void isr20();
+extern void isr21();
+extern void isr22();
+extern void isr23();
+extern void isr24();
+extern void isr25();
+extern void isr26();
+extern void isr27();
+extern void isr28();
+extern void isr29();
+
+extern void isr30();
+extern void isr31();
+extern void isr32();
+extern void isr33();
+extern void isr34();
+extern void isr35();
+extern void isr36();
+extern void isr37();
+extern void isr38();
+extern void isr39();
+
+extern void isr40();
+extern void isr41();
+extern void isr42();
+extern void isr43();
+extern void isr44();
+extern void isr45();
+extern void isr46();
+extern void isr47();
+extern void isr48();
+
 extern void isrFF();
 void (*EXCEPTIONS[])() = {
 	isr0,
@@ -49,6 +81,34 @@ void (*EXCEPTIONS[])() = {
 	isr18,
 	isr19,
 	isr20,
+	isr21, 
+	isr22, 
+	isr23, 
+	isr24, 
+	isr25, 
+	isr26, 
+	isr27, 
+	isr28, 
+	isr29, 
+	isr30, 
+	isr31, 
+	isr32, 
+	isr33, 
+	isr34, 
+	isr35, 
+	isr36, 
+	isr37, 
+	isr38, 
+	isr39, 
+	isr40, 
+	isr41, 
+	isr42, 
+	isr43, 
+	isr44, 
+	isr45, 
+	isr46, 
+	isr47, 
+	isr48 
 };
 
 
@@ -68,6 +128,7 @@ char *EXCEPTION_NAMES[] = {
 	"Stack Fault",
 	"General Protection Exception",
 	"Page Fault",
+	"RESERVED",
 	"Floating Point Exception",
 	"Alignment Check Exception",
 	"Machine-Check Exception",
@@ -94,10 +155,11 @@ void IdtLoad()
 	IDT64_info.length = (sizeof(struct idt_gate)*256)-1;
 	IDT64_info.base = &IDT64;
 
-	for (int i=0; i < 21; i++) {
+	Memset(IDT64, 0, sizeof(struct idt_gate)*256);
+	for (int i=0; i <= 48; i++) {
 		IdtSetGate(i, (uint64_t)EXCEPTIONS[i], 0x08, 0x8E);
 	}
-	IdtSetGate(0xFF, isrFF, 0x08, 0x8E);
+	// IdtSetGate(0xFF, isrFF, 0x08, 0x8E);
 
 	LIDT(&IDT64_info);
 }
@@ -133,7 +195,7 @@ void fault_handler(struct interrupt_frame *frame)
 		for (;;);
 	} else {
 		Print("!!! INTERRUPT vector=0x");
-		Println(Hexstring(buf,16, frame->number));
+		Println(Hexstring(buf,16, frame->number& 0xFF));
 	}
 }
  
