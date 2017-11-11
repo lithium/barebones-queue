@@ -36,39 +36,56 @@ void main64()
 		AcpiInfo_print(&acpiInfo);
 	}
 
-	uint32_t *ioapic_base = acpiInfo.madtIoApicEntries[0]->ioApicAddress;
+	// uint32_t *ioapic_base = acpiInfo.madtIoApicEntries[0]->ioApicAddress;
+	uint32_t *ioapic_base = apic_base_address();
 
+	Print("MSR APIC base address: 0x");
+	Println(Hexstring(hexbuf,16, ioapic_base));
 
 	// recursively mapped page table pointers
 	uint64_t *P4 = 0xfffffffffffff000;		// P4[0] 1G identity map
 	uint64_t *P3 = (uint64_t)P4<<9; 		// P3[0] 1G identity map, P3[1] apic mmio 
 	uint64_t *P2 = (uint64_t)P3<<9; 		// P2[*] 1G identity map,
-	uint64_t *apic_page = (uint64_t)P2 + 0x1000;	// apic mmio
+	uint64_t *apic_page = ((uint64_t)P3<<9) + 0x1000;	// apic mmio
+
 
 	// map 2MB for apic base at 0x40000000
 	apic_page[0] = (uint32_t)ioapic_base | 0x83;	// present | writable | 2MB
 	uint32_t virtual_apic_base = *(uint32_t *)0x40000000;
 
+	Print("Local APIC Version: 0x");
+	Println(Hexstring(hexbuf,16, apic_mmio_read(virtual_apic_base, 0x30)));
 
 	//disable PIC
 	OUTB(0xa1, 0xFF);
 	OUTB(0x21, 0xFF);
 
-	// enable local io apic
-	reg32_offset(virtual_apic_base, 0x0F0) |= 0x10F;
+	// enable local io apic with spurious vector=FF
+	apic_mmio_write(virtual_apic_base, 0x0F0, 0x1FF);
+
+	#define INIT_ICR (APIC_ACR_DELIVERY_MODE_INIT | APIC_ACR_DEST_SHORTHAND_ALL_EXCEPT_SELF | APIC_ACR_LEVEL_ASSERT)
+	#define STARTUP_ICR (APIC_ACR_DELIVERY_MODE_STARTUP | APIC_ACR_DEST_SHORTHAND_ALL_EXCEPT_SELF | APIC_ACR_LEVEL_ASSERT)
 
 	// send INIT/STARTUP IPI to all-except-self
-	reg32_offset(virtual_apic_base, 0x300) = APIC_ACR_DELIVERY_MODE_STARTUP
-						 | APIC_ACR_DEST_SHORTHAND_ALL_EXCEPT_SELF 
-						 | 0x91 // realmode entry at 0x91000
-						 ;
+	apic_mmio_write(virtual_apic_base, 0x310, 0);
+	apic_mmio_write(virtual_apic_base, 0x300, INIT_ICR);
 
-	reg32_offset(virtual_apic_base, 0x300) = APIC_ACR_DELIVERY_MODE_INIT 
-						 | APIC_ACR_DEST_SHORTHAND_ALL_EXCEPT_SELF 
-						 ;
+	// TODO: sleep for 10ms
 
+	apic_mmio_write(virtual_apic_base, 0x310, 0);
+	apic_mmio_write(virtual_apic_base, 0x300, STARTUP_ICR | 0x91);
+
+	// TODO: sleep for 200us
+
+	apic_mmio_write(virtual_apic_base, 0x310, 0);
+	apic_mmio_write(virtual_apic_base, 0x300, STARTUP_ICR | 0x91); 
+
+
+	uint16_t *spinlock = 0x9000;
+	while (*spinlock != 0x4242) {
+
+	}
 	Println("Yay!");
-	for(;;);
 }
 
 

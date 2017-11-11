@@ -21,6 +21,7 @@
 .global isr18
 .global isr19
 .global isr20
+.global isrFF
 
 .section .text
 .code64
@@ -172,6 +173,13 @@ isr20:
 	cli
 	pushq	$0	// error code
 	pushq	$20	// interrupt number
+	jmp	isr_common_stub
+
+isrFF:
+	// apic spurious interrupt
+	cli
+	pushq	$0	// error code
+	pushq	$0xFF	// interrupt number
 	jmp	isr_common_stub
 
 isr_common_stub:

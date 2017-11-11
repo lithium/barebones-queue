@@ -16,10 +16,10 @@ multiboot2_info_addr:
 .code16
 
 real_to_longmode:
-		movl	$0xb8000, %di
-		movl	$0x700, %ax		// clear screen to be gray on black
-		movl 	$(80*25), %cx
-	rep stosw
+		movw	$0x4242, 0x9000
+		// movl	$0x700, %ax		// clear screen to be gray on black
+		// movl 	$(80*25), %cx
+	// rep stosw
 		hlt
 
 

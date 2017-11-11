@@ -27,4 +27,22 @@ inline void LIDT(long *idtAddress) __attribute__((always_inline))
 }
 
 
+inline uint64_t RDMSR(uint32_t msr_reg)  __attribute__((always_inline))
+{
+   uint64_t value;
+   asm volatile ("rdmsr" 
+      : "=A" (value)
+      : "c" (msr_reg)
+   );
+   return value;
+}
+
+inline void WRMSR(uint32_t msr_reg, uint64_t value)  __attribute__((always_inline))
+{
+   asm volatile ("wrmsr"
+      :
+      : "c" (msr_reg), "A" (value)
+   );
+}
+
 #endif

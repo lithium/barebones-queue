@@ -24,5 +24,9 @@
 #define APIC_ACR_TRIGGER_LEVEL (1<<15)
 
 
+uint32_t apic_mmio_read(uint64_t base, unsigned int reg);
+void apic_mmio_write(uint64_t base, unsigned int reg, uint32_t val);
+
+uint32_t apic_base_address();
 
 #endif

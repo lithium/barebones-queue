@@ -26,6 +26,7 @@ extern void isr17();
 extern void isr18();
 extern void isr19();
 extern void isr20();
+extern void isrFF();
 void (*EXCEPTIONS[])() = {
 	isr0,
 	isr1,
@@ -96,6 +97,7 @@ void IdtLoad()
 	for (int i=0; i < 21; i++) {
 		IdtSetGate(i, (uint64_t)EXCEPTIONS[i], 0x08, 0x8E);
 	}
+	IdtSetGate(0xFF, isrFF, 0x08, 0x8E);
 
 	LIDT(&IDT64_info);
 }
@@ -129,6 +131,9 @@ void fault_handler(struct interrupt_frame *frame)
 		Print("     CR2 = 0x");
 		Println(Hexstring(buf,16, frame->cr2));
 		for (;;);
+	} else {
+		Print("!!! INTERRUPT vector=0x");
+		Println(Hexstring(buf,16, frame->number));
 	}
 }
  
