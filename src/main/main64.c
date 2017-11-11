@@ -58,7 +58,7 @@ void main64()
 	STI();
 
 	while (1) {
-		PicSleepTicks(5000);
+		PicSleepTicks(50000);
 		Println("tick");
 	}
 

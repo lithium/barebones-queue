@@ -25,5 +25,5 @@ void PicRemap(uint8_t offset);
 
 void PicHandleTick();
 
-void PicSleepTicks(int ticks);
+void PicSleepTicks(uint64_t ticks);
 #endif

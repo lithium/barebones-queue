@@ -1,6 +1,7 @@
 #include "arch/x86/idt.h"
 #include "vga/vga.h"
 #include "string/String.h"
+#include "pit/pit.h"
 
 
 struct idt_gate IDT64[256];
@@ -193,8 +194,18 @@ void fault_handler(struct interrupt_frame *frame)
 		Println(Hexstring(buf,16, frame->cr2));
 		for (;;);
 	} else {
-		Print("!!! INTERRUPT vector=0x");
-		Println(Hexstring(buf,16, frame->number& 0xFF));
+		if (frame->number == 32) {
+			// PIT timer IRQ0
+			// Println("irq0");
+			PicHandleTick();
+		}
+		else {
+			Print("!!! INTERRUPT vector=0x");
+			Println(Hexstring(buf,16, frame->number& 0xFF));
+		}
+
+		// End Of Interrupt
+		OUTB(PORT_PIC_MASTER_CMD, PIC_CMD_RESET);
 	}
 }
  

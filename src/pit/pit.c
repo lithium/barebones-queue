@@ -2,7 +2,7 @@
 #include "arch/x86.h"
 #include "vga/vga.h"
 
-static uint32_t pic_sleep_ticks_count = 0;
+static uint64_t pic_sleep_ticks_count = 0;
 static uint8_t pic_sleep_ticks_locked = 0;
 
 void PitSetFrequency(uint16_t frequency)
@@ -41,11 +41,11 @@ void PicRemap(uint8_t offset)
 }
 
 
-void PicSleepTicks(int ticks)
+void PicSleepTicks(uint64_t ticks)
 {
 	pic_sleep_ticks_locked = 1;
 	pic_sleep_ticks_count = ticks;
-	Println("locked");
+	// Println("locked");
 	while (pic_sleep_ticks_locked) {
 		//spinlock
 	}
@@ -53,8 +53,9 @@ void PicSleepTicks(int ticks)
 
 void PicHandleTick()
 {
-	while (pic_sleep_ticks_count--) {
+	while (pic_sleep_ticks_count-- > 0) {
 		//spindown
 	}
+	// Println("unlocked");
 	pic_sleep_ticks_locked = 0;
 }
