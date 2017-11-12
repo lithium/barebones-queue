@@ -30,6 +30,7 @@ void main64()
 	uint64_t *apic_page = ((uint64_t)P3<<9) + 0x1000;	// apic mmio
 
 	char hexbuf[17]; // debug buffer
+	Memset(hexbuf, 0, 17);
 
 
 
@@ -51,24 +52,17 @@ void main64()
 
 	//setup PIC/PIT
 	PicRemap(32);
-	OUTB(PORT_PIT_MODE, 0x34); // ch=0 access=lobyte/hibyte operating=rate bcd=0
-	PitSetFrequency(50000);  //each tick is 20us
+	OUTB(PORT_PIT_MODE, 0x36); 	// ch=0 access=lobyte/hibyte operating=rate bcd=0
+	PitSetFrequency(5000);  	// each tick is 200us
 
 	// start interrupts
 	STI();
-
-	while (1) {
-		PicSleepTicks(50000);
-		Println("tick");
-	}
-
-/*	
 
 	// uint32_t *ioapic_base = acpiInfo.madtIoApicEntries[0]->ioApicAddress;
 	uint32_t *ioapic_base = apic_base_address();
 
 	Print("MSR APIC base address: 0x");
-	Println(Hexstring(hexbuf,16, ioapic_base));
+	Println(Hexstring(hexbuf,16, (uint32_t)ioapic_base));
 
 	// map 2MB for apic base at 0x40000000
 	apic_page[0] = (uint32_t)ioapic_base | 0x83;	// present | writable | 2MB
@@ -78,8 +72,8 @@ void main64()
 	Println(Hexstring(hexbuf,16, apic_mmio_read(virtual_apic_base, 0x30)));
 
 	//disable PIC
-	OUTB(0xa1, 0xFF);
-	OUTB(0x21, 0xFF);
+	// OUTB(0xa1, 0xFF);
+	// OUTB(0x21, 0xFF);
 
 	// enable local io apic with spurious vector=FF
 	apic_mmio_write(virtual_apic_base, 0x0F0, 0x1FF);
@@ -91,12 +85,14 @@ void main64()
 	apic_mmio_write(virtual_apic_base, 0x310, 0);
 	apic_mmio_write(virtual_apic_base, 0x300, INIT_ICR);
 
-	// TODO: sleep for 10ms
+	// sleep for 10ms
+	PicSleepTicks(50);
 
 	apic_mmio_write(virtual_apic_base, 0x310, 0);
 	apic_mmio_write(virtual_apic_base, 0x300, STARTUP_ICR | 0x91);
 
-	// TODO: sleep for 200us
+	// sleep for 200us
+	PicSleepTicks(1);
 
 	apic_mmio_write(virtual_apic_base, 0x310, 0);
 	apic_mmio_write(virtual_apic_base, 0x300, STARTUP_ICR | 0x91); 
@@ -106,8 +102,6 @@ void main64()
 	while (*spinlock != 0x4242) {
 
 	}
-*/
-
 
 
 	Println("Yay!");

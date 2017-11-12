@@ -3,15 +3,13 @@
 #include "vga/vga.h"
 
 static uint64_t pic_sleep_ticks_count = 0;
-static uint8_t pic_sleep_ticks_locked = 0;
 
-void PitSetFrequency(uint16_t frequency)
+void PitSetFrequency(uint16_t frequencyInHz)
 {
-	OUTB(PORT_PIT_CHANNEL0, frequency & 0xFF);
-	OUTB(PORT_PIT_CHANNEL0, frequency>>8 & 0xFF);
+	uint16_t f = 1193180 / frequencyInHz;
+	OUTB(PORT_PIT_CHANNEL0, f & 0xFF);
+	OUTB(PORT_PIT_CHANNEL0, f>>8 & 0xFF);
 }
-
-
 
 void PicEndOfInterrupt()
 {
@@ -43,19 +41,15 @@ void PicRemap(uint8_t offset)
 
 void PicSleepTicks(uint64_t ticks)
 {
-	pic_sleep_ticks_locked = 1;
 	pic_sleep_ticks_count = ticks;
-	// Println("locked");
-	while (pic_sleep_ticks_locked) {
-		//spinlock
+	while (pic_sleep_ticks_count > 0) {
+		//spin
 	}
 }
 
 void PicHandleTick()
 {
-	while (pic_sleep_ticks_count-- > 0) {
-		//spindown
+	if (pic_sleep_ticks_count > 0) {
+		pic_sleep_ticks_count--;
 	}
-	// Println("unlocked");
-	pic_sleep_ticks_locked = 0;
 }

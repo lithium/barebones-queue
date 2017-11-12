@@ -17,6 +17,7 @@
 
 void PitSetFrequency(uint16_t frequency);
 
+
 void PicRemap(uint8_t offset);
 
 
@@ -26,4 +27,5 @@ void PicRemap(uint8_t offset);
 void PicHandleTick();
 
 void PicSleepTicks(uint64_t ticks);
+
 #endif
