@@ -1,6 +1,8 @@
 .global start
 .global multiboot2_info_addr
 .global multiboot2_magic
+.global GDT64.pointer
+.global protected_to_longmode
 
 .section .bss
 
@@ -10,32 +12,6 @@ multiboot2_magic:
 multiboot2_info_addr:
 		.long	0
 
-
-
-.section .realmode
-.code16
-
-real_to_longmode:
-
-		// spinlock to acquire mutex at 0x9010
-	spin_lock:
-		mov	$1, %cx
-	.Lspin_lock_retry:
-		xor	%ax, %ax
-	lock	cmpxchg	%cx, (0x9010)
-		jnz	.Lspin_lock_retry
-
-		// increment processor count at 0x9000
-		mov	(0x9000), %ax
-		inc	%ax
-		mov	%ax, (0x9000)
-
-		// release mutex
-	spin_unlock:
-		movw	$0, (0x9010)
-
-		cli	
-		hlt
 
 
 .section .text
@@ -57,9 +33,8 @@ start:
 
 		call	protected_to_longmode
 
-
 	.Lmain:
-		lgdt	GDT.pointer
+		lgdt	GDT64.pointer
 
 		// 8 is the offset in GDT to the code segment
 		ljmp	$8, $longmode_start
@@ -255,14 +230,14 @@ enable_paging:
 	.set GDT_PRESENT, 1<<47
 	.set GDT_64BIT, 1<<53
 
-GDT:
+GDT64:
 		.quad	0 	// null entry
 	.code:
 		.quad (GDT_EXECUTABLE | GDT_CODE_SEGMENT | GDT_PRESENT | GDT_64BIT)
 
-GDT.pointer:
-		.word (. - GDT - 1)
-		.quad GDT
+GDT64.pointer:
+		.word (. - GDT64 - 1)
+		.quad GDT64
 
 
 

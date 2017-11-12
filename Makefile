@@ -6,7 +6,7 @@ GAS := $(TARGET)-as
 CC := clang
 OBJDUMP := $(TARGET)-objdump
 GRUB_MKRESCUE := grub-mkrescue
-QEMU := qemu-system-$(ARCH) -cpu core2duo -smp sockets=1,cores=4,threads=2
+QEMU := qemu-system-$(ARCH) -cpu core2duo -smp sockets=1,cores=2,threads=2
 
 CFLAGS := -g -target $(TARGET) -I src
 LDFLAGS := -g -z max-page-size=0x1000

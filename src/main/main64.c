@@ -104,6 +104,8 @@ void main64()
 
 	Print("Processors woke: 0x");
 	Println(Hexstring(hexbuf,16, *processor_count));
+
+	for(;;);
 }
 
 
