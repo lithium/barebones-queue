@@ -71,8 +71,8 @@ void main64()
 	Print("Local APIC Version: 0x");
 	Println(Hexstring(hexbuf,16, apic_mmio_read(virtual_apic_base, 0x30)));
 
-	uint16_t *spinlock = 0x9000;
-	*spinlock = 0x5555;
+	uint16_t *processor_count = 0x9000;
+	*processor_count = 1;
 
 	// enable local io apic with spurious vector=FF
 	apic_mmio_write(virtual_apic_base, 0x0F0, 0x1FF);
@@ -97,13 +97,13 @@ void main64()
 	apic_mmio_write(virtual_apic_base, 0x300, STARTUP_ICR | 0x91); 
 
 
-	Println("waiting...");
-	while (*spinlock != 0x4242) {
+	Println("Waiting for processors...");
+	while (*processor_count < acpiInfo.madtProcessorEntryCount) {
 
 	}
 
-
-	Println("Yay!");
+	Print("Processors woke: 0x");
+	Println(Hexstring(hexbuf,16, *processor_count));
 }
 
 

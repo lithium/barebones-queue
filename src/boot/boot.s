@@ -16,10 +16,25 @@ multiboot2_info_addr:
 .code16
 
 real_to_longmode:
-		movw	$0x4242, 0x9000
-		// movl	$0x700, %ax		// clear screen to be gray on black
-		// movl 	$(80*25), %cx
-	// rep stosw
+
+		// spinlock to acquire mutex at 0x9010
+	spin_lock:
+		mov	$1, %cx
+	.Lspin_lock_retry:
+		xor	%ax, %ax
+	lock	cmpxchg	%cx, (0x9010)
+		jnz	.Lspin_lock_retry
+
+		// increment processor count at 0x9000
+		mov	(0x9000), %ax
+		inc	%ax
+		mov	%ax, (0x9000)
+
+		// release mutex
+	spin_unlock:
+		movw	$0, (0x9010)
+
+		cli	
 		hlt
 
 
