@@ -66,14 +66,13 @@ void main64()
 
 	// map 2MB for apic base at 0x40000000
 	apic_page[0] = (uint32_t)ioapic_base | 0x83;	// present | writable | 2MB
-	uint32_t virtual_apic_base = *(uint32_t *)0x40000000;
+	uint32_t virtual_apic_base = (uint32_t *)0x40000000;
 
 	Print("Local APIC Version: 0x");
 	Println(Hexstring(hexbuf,16, apic_mmio_read(virtual_apic_base, 0x30)));
 
-	//disable PIC
-	// OUTB(0xa1, 0xFF);
-	// OUTB(0x21, 0xFF);
+	uint16_t *spinlock = 0x9000;
+	*spinlock = 0x5555;
 
 	// enable local io apic with spurious vector=FF
 	apic_mmio_write(virtual_apic_base, 0x0F0, 0x1FF);
@@ -98,7 +97,7 @@ void main64()
 	apic_mmio_write(virtual_apic_base, 0x300, STARTUP_ICR | 0x91); 
 
 
-	uint16_t *spinlock = 0x9000;
+	Println("waiting...");
 	while (*spinlock != 0x4242) {
 
 	}
