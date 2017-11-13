@@ -2,11 +2,16 @@ ENTRY(start)
 
 SECTIONS
 {
-	. = 0x91000;
-
-	.text :
+	.multiboot :
 	{
-		*(.realmode)
+		/* keep multiboot header near beginning */
+		KEEP(*(.multiboot))
+		. = ALIGN(4K);
+	}
+
+	.realmode 0x91000  :
+	{
+		build/boot_ap.o (.text)
 	}
 
 
@@ -14,8 +19,6 @@ SECTIONS
 
 	.rodata :
 	{
-		/* keep multiboot header near beginning */
-		KEEP(*(.multiboot))
 		*(.rodata)
 		. = ALIGN(4K);
 	}

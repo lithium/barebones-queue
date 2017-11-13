@@ -1,6 +1,6 @@
 
 
-.section .realmode
+.section .text
 .code16
 
 
@@ -27,58 +27,61 @@ ap_start:
 		// save processor number in DX
 		mov	%ax, %dx
 
+	.Lloop:
+		cli
 		hlt
-		// jmp	real_to_protectedmode
+		jmp .Lloop
 
 
-// .code32
-
-// real_to_protectedmode:
-
-// 		lgdt	GDT32.pointer
+		jmp	real_to_protectedmode
 
 
-// 		// protected mode enable
-// 		mov	%cr0, %eax
-// 		or	$1, %ax
-// 		mov	%eax, %cr0
+.code32
+
+real_to_protectedmode:
+
+		lgdt	GDT32.pointer
 
 
-// 		ljmp	$8, $protectedmode_start
-
-// protectedmode_start:
-// 		mov	$8, %ax
-// 		mov	%ax, %cs
-// 		mov	$16, %ax
-// 		mov	%ax, %ds
+		// protected mode enable
+		mov	%cr0, %eax
+		or	$1, %ax
+		mov	%eax, %cr0
 
 
-// 		cli
-// 		hlt
+		ljmp	$8, $protectedmode_start
 
+protectedmode_start:
+		mov	$8, %ax
+		mov	%ax, %cs
+		mov	$16, %ax
+		mov	%ax, %ds
 
 
 
-// .section .rodata
 
-// GDT32:
-// 	.null32:
-// 		.quad 0			
-// 	.code32:
-// 		.word 0xFFFF		// limit[0:15]
-// 		.word 0			// base[0:15]
-// 		.byte 0			// base[16:23]
-// 		.byte 0b10011110 	// accessbyte = present | ring=0 | executable | code | readable
-// 		.byte 0b11001111	// flags, limit[16:19]
-// 		.byte 0			// base[24:31]
-// 	.data32:
-// 		.word 0xFFFF		// limit[0:15]
-// 		.word 0			// base[0:15]
-// 		.byte 0			// base[16:23]
-// 		.byte 0b10010010 	// accessbyte = present | ring=0 | data | writable
-// 		.byte 0b11001111	// flags, limit[16:19]
-// 		.byte 0			// base[24:31]
 
-// GDT32.pointer:
-// 		.word (. - GDT32 - 1)
-// 		.quad GDT32
+
+.section .rodata
+
+GDT32:
+	.null32:
+		.quad 0			
+	.code32:
+		.word 0xFFFF		// limit[0:15]
+		.word 0			// base[0:15]
+		.byte 0			// base[16:23]
+		.byte 0b10011110 	// accessbyte = present | ring=0 | executable | code | readable
+		.byte 0b11001111	// flags, limit[16:19]
+		.byte 0			// base[24:31]
+	.data32:
+		.word 0xFFFF		// limit[0:15]
+		.word 0			// base[0:15]
+		.byte 0			// base[16:23]
+		.byte 0b10010010 	// accessbyte = present | ring=0 | data | writable
+		.byte 0b11001111	// flags, limit[16:19]
+		.byte 0			// base[24:31]
+
+GDT32.pointer:
+		.word (. - GDT32 - 1)
+		.quad GDT32
