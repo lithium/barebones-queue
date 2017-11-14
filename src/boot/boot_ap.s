@@ -27,18 +27,9 @@ ap_start:
 		// save processor number in DX
 		mov	%ax, %dx
 
-	.Lloop:
-		cli
-		hlt
-		jmp .Lloop
-
-
-		jmp	real_to_protectedmode
-
-
-.code32
 
 real_to_protectedmode:
+.code32
 
 		lgdt	GDT32.pointer
 
@@ -49,15 +40,28 @@ real_to_protectedmode:
 		mov	%eax, %cr0
 
 
+	.Lloop:
+		cli
+		hlt
+		jmp .Lloop
+
+
 		ljmp	$8, $protectedmode_start
 
 protectedmode_start:
-		mov	$8, %ax
-		mov	%ax, %cs
+.code32
 		mov	$16, %ax
+		mov	%ax, %ss
 		mov	%ax, %ds
+		mov	%ax, %es
+		mov	%ax, %fs
+		mov	%ax, %gs
 
 
+	.Lloop2:
+		cli
+		hlt
+		jmp .Lloop2
 
 
 
@@ -71,7 +75,7 @@ GDT32:
 		.word 0xFFFF		// limit[0:15]
 		.word 0			// base[0:15]
 		.byte 0			// base[16:23]
-		.byte 0b10011110 	// accessbyte = present | ring=0 | executable | code | readable
+		.byte 0b10011010 	// accessbyte = present | ring=0 | executable | code | readable
 		.byte 0b11001111	// flags, limit[16:19]
 		.byte 0			// base[24:31]
 	.data32:
